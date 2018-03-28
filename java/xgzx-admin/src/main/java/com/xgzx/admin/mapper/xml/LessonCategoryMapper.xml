@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.LessonCategoryMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.LessonCategory">
+		<id column="lesson_category_id" property="lessonCategoryId" />
+		<result column="category_name" property="categoryName" />
+		<result column="image_url" property="imageUrl" />
+		<result column="order_no" property="orderNo" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        lesson_category_id AS lessonCategoryId, category_name AS categoryName, image_url AS imageUrl, order_no AS orderNo, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM LessonCategory LessonCategory
+		WHERE LessonCategory.lesson_category_id = #{id}
+	</select>	
+</mapper>

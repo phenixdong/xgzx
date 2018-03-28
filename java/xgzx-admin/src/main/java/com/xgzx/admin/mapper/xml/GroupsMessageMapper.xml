@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.GroupsMessageMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.GroupsMessage">
+		<id column="groups_message_id" property="groupsMessageId" />
+		<result column="group_id" property="groupId" />
+		<result column="user_id" property="userId" />
+		<result column="message" property="message" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        groups_message_id AS groupsMessageId, group_id AS groupId, message, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM GroupsMessage GroupsMessage
+		WHERE GroupsMessage.groups_message_id = #{id}
+	</select>	
+	
+	<select id="getReceivedMessage" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT g.*
+		FROM groups_message g, groups_user gu
+		WHERE gu.user_id = #{userId}
+		AND gu.group_id = #{groupId}
+		AND g.group_id = gu.group_id
+		ORDER BY g.create_time DESC
+	</select>	
+	
+	<select id="getNewMessageGroups" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		SELECT gm.group_id AS groupId, g.group_name AS groupName, count(1) AS number 
+		FROM groups_message gm, groups_user gu, groups g
+		WHERE gu.user_id = #{userId}
+		AND gm.group_id = gu.group_id
+		AND gm.group_id = g.group_id
+		AND gm.create_time &gt; gu.message_read_time
+		GROUP BY gm.group_id, g.group_name
+	</select>	
+	
+	<select id="getSendMessageList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT gm.*, u.user_name AS userName
+		FROM groups_message gm, groups g, user u
+		WHERE gm.group_id = g.group_id
+		AND gm.valid_tag = 1
+		AND gm.user_id = u.user_id
+		<if test="userId != null and '' != userId" >
+			AND gm.user_id = #{userId}
+		</if>
+		<if test="groupId != null and '' != groupId" >
+			AND g.group_id = #{groupId}
+		</if>
+		ORDER BY gm.create_time DESC
+	</select>	
+	
+	<select id="getGroupsNewMessageList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT gm.*
+		FROM groups_message gm, groups_user gu, groups g
+		WHERE gu.user_id = #{userId}
+		AND g.group_id = #{groupId}
+		AND gm.group_id = gu.group_id
+		AND gm.group_id = g.group_id
+		AND gm.create_time &gt; gu.message_read_time
+		ORDER BY gm.create_time
+	</select>
+	
+</mapper>

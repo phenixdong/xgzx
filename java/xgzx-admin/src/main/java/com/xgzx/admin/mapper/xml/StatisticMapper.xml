@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.StatisticMapper">
+	  
+	<select id="select" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+        select a.totalIn, b.totalRebate, c.totalWithdraw, d.totalPubRebate, e.totalPersonRebate
+		from 
+		(
+			select sum(t.number) as totalIn 
+			from transaction t 
+			where t.valid_tag = 1 and t.operation = 2) a,
+		(
+			select sum(case when rt.number is null then 0 else rt.number end) as totalRebate
+			from rebate_transaction rt
+			where rt.valid_tag = 1 and rt.operation = 1) b,
+		(
+			select sum(case when rw.number is null then 0 else rw.number end) as totalWithdraw 
+			from rebate_withdraw rw 
+			where rw.valid_tag = 1 and rw.status in (2, 3)) c,
+		(
+			select sum(case when rt.number is null then 0 else rt.number end) as totalPubRebate
+			from rebate_transaction rt
+			where rt.valid_tag = 1 and rt.operation = 1 and rt.user_id = '1234567890123456') d,
+		(
+			select sum(case when rt.number is null then 0 else rt.number end) as totalPersonRebate
+			from rebate_transaction rt
+			where rt.valid_tag = 1 and rt.operation = 1 and rt.user_id != '1234567890123456') e
+    </select> 
+	
+</mapper>

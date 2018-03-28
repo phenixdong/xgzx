@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.GroupsMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.Groups">
+		<id column="group_id" property="groupId" />
+		<result column="group_name" property="groupName" />
+		<result column="master_user_id" property="masterUserId" />
+		<result column="type" property="type" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        group_id AS groupId, group_name AS groupName, master_user_id AS masterUserId, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM Groups Groups
+		WHERE Groups.group_id = #{id}
+	</select>	
+	
+	<select id="selectGroupsList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        SELECT g.*, u.user_name as userName, 
+        	(select count(1) from groups_user gu
+        	 where gu.group_id = g.group_id) as memberNumber
+        FROM groups g, user u 
+        WHERE g.valid_tag = 1
+        AND u.user_id = g.master_user_id
+        AND g.type = 1
+		<if test="startTime != null and '' != startTime" >
+			AND date(g.create_time) &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and '' != endTime" >
+			AND date(g.create_time) &lt; #{endTime}
+		</if>
+		<if test="userName != null and '' != userName" >
+			AND u.user_name like concat(concat('%', #{userName}), '%')
+		</if>
+        ORDER BY g.create_time DESC
+    </select> 
+    
+    <select id="selectBulkBuyGroupsList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        SELECT g.*,
+        	(select count(1) from groups_user gu
+        	 where gu.group_id = g.group_id) as memberNumber
+        FROM groups g 
+        WHERE g.valid_tag = 1 
+        AND g.type = 2
+		<if test="startTime != null and '' != startTime" >
+			AND date(g.create_time) &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and '' != endTime" >
+			AND date(g.create_time) &lt; #{endTime}
+		</if>
+		<if test="groupName != null and '' != groupName" >
+			AND g.group_name like concat(concat('%', #{groupName}), '%')
+		</if>
+        ORDER BY g.create_time DESC
+    </select> 
+    
+    <select id="getBelongedGroups" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+    	SELECT g.*
+    	FROM groups_user gu, groups g
+    	WHERE gu.user_id = #{userId}
+    	AND g.group_id = gu.group_id
+    	AND g.valid_tag = 1
+    	AND gu.valid_tag = 1
+    </select> 
+    
+    <insert id="insertReturnId" parameterType="Groups" 
+		useGeneratedKeys="true" keyProperty="groupId">
+       	INSERT INTO groups 
+       	<trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="groupId != null and '' != groupId">
+				group_id,
+			</if>
+			<if test="groupName != null and '' != groupName">
+				group_name,
+			</if>
+			<if test="masterUserId != null and '' != masterUserId">
+				master_user_id,
+			</if>
+			<if test="type != null and '' != type">
+				type,
+			</if>
+			<if test="validTag != null and '' != validTag">
+				valid_tag,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="createUserId != null and '' != createUserId">
+				create_user_id,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="updateUserId != null and '' != updateUserId">
+				update_user_id,
+			</if>
+		</trim>
+		
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+           	<if test="groupId != null and '' != groupId">
+				#{groupId},
+			</if>
+			<if test="groupName != null and '' != groupName">
+				#{groupName},
+			</if>
+			<if test="masterUserId != null and '' != masterUserId">
+				#{masterUserId},
+			</if>
+			<if test="type != null and '' != type">
+				#{type},
+			</if>
+			<if test="validTag != null and '' != validTag">
+				#{validTag},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="createUserId != null and '' != createUserId">
+				#{createUserId},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="updateUserId != null and '' != updateUserId">
+				#{updateUserId},
+			</if>
+		</trim>
+	</insert>
+	
+</mapper>

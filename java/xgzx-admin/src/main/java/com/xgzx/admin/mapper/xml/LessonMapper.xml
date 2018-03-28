@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.LessonMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.Lesson">
+		<id column="lesson_id" property="lessonId" />
+		<result column="lesson_name" property="lessonName" />
+		<result column="category_id" property="categoryId" />
+		<result column="teacher_id" property="teacherId" />
+		<result column="video_id" property="videoId" />
+		<result column="price" property="price" />
+		<result column="order_no" property="orderNo" />
+		<result column="description" property="description" />
+		<result column="charge_type" property="chargeType" />
+		<result column="watch_no" property="watchNo" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        lesson_id AS lessonId, lesson_name AS lessonName, category_id AS categoryId, teacher_id AS teacherId, video_id AS videoId, price, charge_type AS chargeType, watch_no AS watchNo, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM Lesson Lesson
+		WHERE Lesson.lesson_id = #{id}
+	</select>	
+	
+	<insert id="insertReturnId" parameterType="Lesson" 
+		useGeneratedKeys="true" keyProperty="lessonId">
+       	INSERT INTO lesson 
+       	<trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="lessonId != null and '' != lessonId">
+				lesson_id,
+			</if>
+			<if test="lessonName != null and '' != lessonName">
+				lesson_name,
+			</if>
+			<if test="categoryId != null and '' != categoryId">
+				category_id,
+			</if>
+			<if test="teacherId != null and '' != teacherId">
+				teacher_id,
+			</if>
+			<if test="orderNo != null and '' != orderNo">
+				order_no,
+			</if>
+			<if test="videoId != null and '' != videoId">
+				video_id,
+			</if>
+			<if test="description != null and '' != description">
+				description,
+			</if>
+				price,
+			<if test="chargeType != null and '' != chargeType">
+				charge_type,
+			</if>
+				watch_no,
+			<if test="validTag != null and '' != validTag">
+				valid_tag,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="createUserId != null and '' != createUserId">
+				create_user_id,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="updateUserId != null and '' != updateUserId">
+				update_user_id,
+			</if>
+		</trim>
+		
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+           	<if test="lessonId != null and '' != lessonId">
+				#{lessonId},
+			</if>
+			<if test="lessonName != null and '' != lessonName">
+				#{lessonName},
+			</if>
+			<if test="categoryId != null and '' != categoryId">
+				#{categoryId},
+			</if>
+			<if test="teacherId != null and '' != teacherId">
+				#{teacherId},
+			</if>
+			<if test="orderNo != null and '' != orderNo">
+				#{orderNo},
+			</if>
+			<if test="videoId != null and '' != videoId">
+				#{videoId},
+			</if>
+			<if test="description != null and '' != description">
+				#{description},
+			</if>
+				#{price},
+			<if test="chargeType != null and '' != chargeType">
+				#{chargeType},
+			</if>
+				#{watchNo},
+			<if test="validTag != null and '' != validTag">
+				#{validTag},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="createUserId != null and '' != createUserId">
+				#{createUserId},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="updateUserId != null and '' != updateUserId">
+				#{updateUserId},
+			</if>
+		</trim>
+	</insert>
+	
+	<select id="selectLessonList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        SELECT l.*, t.teacher_name as teacherName, 
+        	c.category_name as categoryName,
+        	v.cover_url as coverUrl
+        FROM lesson l
+        LEFT JOIN teacher t
+			ON l.teacher_id = t.teacher_id
+		LEFT JOIN lesson_category c
+			ON l.category_id = c.lesson_category_id
+		LEFT JOIN video v
+			ON l.video_id = v.video_id
+        WHERE l.valid_tag = 1
+        <if test="lessonName != null and '' != lessonName">
+			AND l.lesson_name like concat(concat('%', #{lessonName}), '%')
+		</if>
+		<if test="categoryId != null and '' != categoryId" >
+			AND l.category_id = #{categoryId}
+		</if>
+		<if test="chargeType != null and '' != chargeType" >
+			AND l.charge_type = #{chargeType}
+		</if>
+		<if test="startTime != null and '' != startTime" >
+			AND date(l.create_time) &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and '' != endTime" >
+			AND date(l.create_time) &lt; #{endTime}
+		</if>
+		ORDER BY ${orderSql}
+    </select> 
+    
+    <select id="getWatchList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT l.*, w.create_time, v.cover_url as coverUrl
+        FROM lesson l, lesson_watch w, video v
+        WHERE w.user_id = #{userId}
+        AND l.lesson_id = w.lesson_id
+		AND l.video_id = v.video_id
+		ORDER BY w.create_time DESC
+    </select>
+	
+</mapper>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.BulkBuyMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.BulkBuy">
+		<id column="bulk_buy_id" property="bulkBuyId" />
+		<result column="customer_name" property="customerName" />
+		<result column="number" property="number" />
+		<result column="register_number" property="registerNumber" />
+		<result column="password" property="password" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        bulk_buy_id AS bulkBuyId, customer_name AS customerName, number, password, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+	<insert id="insertReturnId" parameterType="BulkBuy" 
+		useGeneratedKeys="true" keyProperty="bulkBuyId">
+        INSERT INTO bulk_buy
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+        <if test="null != bulkBuyId and '' != bulkBuyId">
+			bulk_buy_id,
+		</if>
+        <if test="null != customerName and '' != customerName">
+			customer_name,
+		</if>
+        <if test="null != number and '' != number">
+			number,
+		</if>
+        <if test="null != password and '' != password">
+			password,
+		</if>
+        <if test="null != validTag and '' != validTag">
+			valid_tag,
+		</if>
+        <if test="null != createTime and '' != createTime">
+			create_time,
+		</if>
+        <if test="null != createUserId and '' != createUserId">
+			create_user_id,
+		</if>
+        <if test="null != updateTime and '' != updateTime">
+			update_time,
+		</if>
+        <if test="null != updateUserId and '' != updateUserId">
+			update_user_id,
+		</if>
+        </trim>
+        
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+        <if test="null != bulkBuyId and '' != bulkBuyId">
+			${bulkBuyId},
+		</if>
+        <if test="null != customerName and '' != customerName">
+			${customerName},
+		</if>
+        <if test="null != number and '' != number">
+			${number},
+		</if>
+        <if test="null != password and '' != password">
+			${password},
+		</if>
+        <if test="null != validTag and '' != validTag">
+			${validTag},
+		</if>
+        <if test="null != createTime and '' != createTime">
+			${createTime},
+		</if>
+        <if test="null != createUserId and '' != createUserId">
+			${createUserId},
+		</if>
+        <if test="null != updateTime and '' != updateTime">
+			${updateTime},
+		</if>
+        <if test="null != updateUserId and '' != updateUserId">
+			${updateUserId},
+		</if>
+        </trim>
+    </insert>
+
+	<select id="selectList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT bulk_buy.*
+		FROM bulk_buy bulk_buy
+		WHERE bulk_buy.valid_tag = 1
+		<if test="null != customerName and '' != customerName" >
+			AND customer_name like concat('%', concat(#{customerName}, '%'))
+		</if>
+		<if test="null != startTime and '' != startTime" >
+			AND date(bulk_buy.create_time) &gt;= #{startTime}
+		</if>
+		<if test="null != endTime and '' != endTime" >
+			AND date(bulk_buy.create_time) &lt; #{endTime}
+		</if>
+		<if test="null != orderSql and '' != orderSql" >
+			ORDER BY ${orderSql}
+		</if>
+	</select>	
+</mapper>

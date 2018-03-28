@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.GroupsUserMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.GroupsUser">
+		<id column="group_user_id" property="groupUserId" />
+		<result column="group_id" property="groupId" />
+		<result column="user_id" property="userId" />
+		<result column="master_tag" property="masterTag" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+	
+	<resultMap id="UserBaseResultMap" type="com.xgzx.admin.entity.User">
+		<id column="user_id" property="userId" />
+		<result column="open_id" property="openId" />
+		<result column="login_id" property="loginId" />
+		<result column="recommender_user_id" property="recommenderUserId" />
+		<result column="password" property="password" />
+		<result column="user_name" property="userName" />
+		<result column="nick_name" property="nickName" />
+		<result column="valid_tag" property="validTag" />
+		<result column="user_state" property="userState" />
+		<result column="mobile" property="mobile" />
+		<result column="email" property="email" />
+		<result column="sex" property="sex" />
+		<result column="image_url" property="imageUrl" />
+		<result column="province" property="province" />
+		<result column="city" property="city" />
+		<result column="area_id" property="areaId" />
+		<result column="area_name" property="areaName" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        group_user_id AS groupUserId, group_id AS groupId, user_id AS userId, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM GroupsUser GroupsUser
+		WHERE GroupsUser.group_user_id = #{id}
+	</select>	
+	
+	<select id="selectGroupsUserList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT g.*, u.nick_name as nickName, u.create_time as userCreateTime,
+			u.image_url as imageUrl
+		FROM groups_user g, user u
+		WHERE g.user_id = u.user_id
+		<if test="groupId != null and '' != groupId" >
+			AND g.group_id = #{groupId}
+		</if>
+		ORDER BY g.create_time
+	</select>
+	
+	<select id="getGroupsMateList" resultMap="UserBaseResultMap" 
+			parameterType="java.util.HashMap">
+		select distinct u.* 
+		from user u, groups_user gu
+		where gu.group_id in ${ids}
+		and gu.user_id = u.user_id 
+		and gu.user_id != #{userId}
+		and gu.user_id not in ${currentUserIds}
+	</select>
+	
+	<insert id="addGroupsUser" parameterType="GroupsUser">
+		insert into groups_user
+			(group_id, user_id, message_read_time, master_tag, valid_tag, create_time)
+		values 
+			(#{group_id}, #{user_id}, now(), 0, 1, now())
+	</insert>
+	
+	
+</mapper>

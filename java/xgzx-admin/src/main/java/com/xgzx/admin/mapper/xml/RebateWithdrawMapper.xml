@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.RebateWithdrawMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.RebateWithdraw">
+		<id column="rebate_withdraw_id" property="rebateWithdrawId" />
+		<result column="user_id" property="userId" />
+		<result column="number" property="number" />
+		<result column="pay_code" property="payCode" />
+		<result column="apply_time" property="applyTime" />
+		<result column="pay_time" property="payTime" />
+		<result column="mch_bill_no" property="mchBillNo" />
+		<result column="status" property="status" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        rebate_withdraw_id AS rebateWithdrawId, user_id AS userId, number, apply_time AS applyTime, pay_time AS payTime, status, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM RebateWithdraw RebateWithdraw
+		WHERE RebateWithdraw.rebate_withdraw_id = #{id}
+	</select>	
+	
+	<select id="selectRebateWithdrawList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        SELECT r.*, u.user_name as userName, c.qrcode_url as qrcodeUrl
+        FROM rebate_withdraw r
+        LEFT JOIN rebate_wx_qrcode c
+        	ON r.user_id = c.user_id AND c.valid_tag = 1
+		LEFT JOIN user u
+			ON u.valid_tag = 1
+        WHERE r.valid_tag = 1
+        AND u.user_id = r.user_id
+		<if test="startTime != null and '' != startTime" >
+			AND date(r.create_time) &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and '' != endTime" >
+			AND date(r.create_time) &lt; #{endTime}
+		</if>
+		<if test="userName != null and '' != userName" >
+			AND u.user_name like concat(concat('%', #{userName}), '%')
+		</if>
+		<if test="userId != null and '' != userId" >
+			AND r.user_id = #{userId}
+		</if>
+		<if test="status != null and '' != status" >
+			AND r.status = #{status}
+		</if>
+        ORDER BY r.create_time DESC
+    </select> 
+    
+</mapper>

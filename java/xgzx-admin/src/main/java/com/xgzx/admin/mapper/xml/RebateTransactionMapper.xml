@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.RebateTransactionMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.RebateTransaction">
+		<id column="rebate_transaction_id" property="rebateTransactionId" />
+		<result column="user_id" property="userId" />
+		<result column="number" property="number" />
+		<result column="order_id" property="orderId" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        rebate_transaction_id AS rebateTransactionId, user_id AS userId, number, order_id AS orderId, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM RebateTransaction RebateTransaction
+		WHERE RebateTransaction.rebate_transaction_id = #{id}
+	</select>	
+	
+	<select id="selectRebateTransactionList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        SELECT t.*, rebate_u.user_name as userName,
+        	order_u.user_name as orderUserName, o.total_fee as orderNumber,
+        	o.product_type as orderProductType 
+        FROM rebate_transaction t, orders o, user rebate_u, user order_u
+        WHERE t.valid_tag = 1
+        AND o.order_id = t.order_id
+        AND order_u.user_id = o.user_id
+        AND rebate_u.user_id = t.user_id
+        <if test="userId != null and '' != userId" >
+			AND t.user_id = #{userId}
+		</if>
+        <if test="userName != null and '' != userName" >
+			AND rebate_u.user_name like concat(concat('%', #{userName}), '%')
+		</if>
+		<if test="startTime != null and '' != startTime" >
+			AND date(t.create_time) &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and '' != endTime" >
+			AND date(t.create_time) &lt; #{endTime}
+		</if>
+        ORDER BY t.create_time DESC
+    </select> 
+    
+</mapper>

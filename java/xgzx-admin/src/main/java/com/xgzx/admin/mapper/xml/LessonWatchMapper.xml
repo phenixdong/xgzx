@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.LessonWatchMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.LessonWatch">
+		<id column="lesson_watch_id" property="lessonWatchId" />
+		<result column="user_id" property="userId" />
+		<result column="lesson_id" property="lessonId" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        lesson_watch_id AS lessonWatchId, user_id AS userId, lesson_id AS lessonId, valid_tag AS validTag, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM LessonWatch LessonWatch
+		WHERE LessonWatch.lesson_watch_id = #{id}
+	</select>	
+	
+	<select id="getListByTime" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		select w.*, t.teacher_id as teacherId, t.teacher_name as teacherName
+		from lesson_watch w, teacher t, lesson l
+		WHERE w.user_id = #{userId}
+		and date_format(w.create_time, '%Y-%m-%d') &gt;= #{startTime}
+		and date_format(w.create_time, '%Y-%m-%d') &lt;= #{endTime}
+		and w.lesson_id = l.lesson_id 
+		and l.teacher_id = t.teacher_id
+	</select>	
+	
+</mapper>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.UserMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.User">
+		<id column="user_id" property="userId" />
+		<result column="open_id" property="openId" />
+		<result column="login_id" property="loginId" />
+		<result column="recommender_user_id" property="recommenderUserId" />
+		<result column="password" property="password" />
+		<result column="user_name" property="userName" />
+		<result column="nick_name" property="nickName" />
+		<result column="valid_tag" property="validTag" />
+		<result column="user_state" property="userState" />
+		<result column="mobile" property="mobile" />
+		<result column="email" property="email" />
+		<result column="sex" property="sex" />
+		<result column="image_url" property="imageUrl" />
+		<result column="province" property="province" />
+		<result column="city" property="city" />
+		<result column="area_id" property="areaId" />
+		<result column="area_name" property="areaName" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        user_id AS userId, open_id AS openId, login_id AS loginId, password, user_name AS userName, nick_name, valid_tag AS validTag, user_state AS userState, mobile, email, sex, area_id AS areaId, area_name AS areaName, create_time AS createTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM User User
+		WHERE User.user_id = #{id}
+	</select>	
+	  
+	<select id="selectUserList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        SELECT u.*, m.user_member_id as memberId, m.member_type_id as memberTypeId
+        FROM user u 
+        LEFT JOIN user_member m
+			ON u.user_id = m.user_id
+		LEFT JOIN member_type mt
+			ON mt.member_type_id = m.member_type_id
+        WHERE u.valid_tag = 1
+        <if test="userName != null and '' != userName">
+			AND u.user_name like concat(concat('%', #{userName}), '%')
+		</if>
+		<if test="nickName != null and '' != nickName">
+			AND u.nick_name like concat(concat('%', #{nickName}), '%')
+		</if>
+		<if test="startTime != null and '' != startTime" >
+			AND date(u.create_time) &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and '' != endTime" >
+			AND date(u.create_time) &lt; #{endTime}
+		</if>
+        ORDER BY u.create_time DESC
+    </select> 
+    
+  	<select id="getUserInfo" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT u.*, m.member_type_id as memberTypeId, 
+			mt.member_type_name as memberTypeName,
+			mt.price as memberTypePrice,
+			m.start_time as startTime, m.end_time as endTime
+        FROM user u 
+        LEFT JOIN user_member m
+			ON u.user_id = m.user_id
+		LEFT JOIN member_type mt
+			ON mt.member_type_id = m.member_type_id
+        WHERE u.valid_tag = 1
+        <if test="userName != null and '' != userName">
+			AND u.user_name like concat(concat('%', #{userName}), '%')
+		</if>
+		<if test="nickName != null and '' != nickName">
+			AND u.nick_name like concat(concat('%', #{nickName}), '%')
+		</if>
+		<if test="openId != null and '' != openId">
+			AND u.open_id = #{openId}
+		</if>
+	</select>
+
+    <select id="selectRebateList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        SELECT *
+        FROM user 
+        WHERE valid_tag = 1
+        <if test="userName != null and '' != userName">
+			AND user_name like concat(concat('%', #{userName}), '%')
+		</if>
+		<if test="nickName != null and '' != nickName">
+			AND nick_name like concat(concat('%', #{nickName}), '%')
+		</if>
+		<if test="startTime != null and '' != startTime" >
+			AND date(create_time) &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and '' != endTime" >
+			AND date(create_time) &lt; #{endTime}
+		</if>
+        ORDER BY create_time DESC
+    </select> 
+	
+	<select id="testGetMasterList" resultType="java.util.HashMap" >
+		SELECT u.recommender_user_id AS id, un.nick_name AS name	
+		FROM user u, user un
+		WHERE u.recommender_user_id = un.user_id
+		GROUP BY id, name
+	</select>
+	
+</mapper>

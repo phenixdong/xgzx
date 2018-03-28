@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xgzx.admin.mapper.OrdersMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.xgzx.admin.entity.Orders">
+		<id column="order_id" property="orderId" />
+		<result column="user_id" property="userId" />
+		<result column="product_id" property="productId" />
+		<result column="product_type" property="productType" />
+		<result column="pay_state" property="payState" />
+		<result column="total_fee" property="totalFee" />
+		<result column="trade_type" property="tradeType" />
+		<result column="bank_type" property="bankType" />
+		<result column="is_subscribe" property="isSubscribe" />
+		<result column="recommender_user_id" property="recommenderUserId" />
+		<result column="valid_tag" property="validTag" />
+		<result column="create_time" property="createTime" />
+		<result column="end_time" property="endTime" />
+		<result column="create_user_id" property="createUserId" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user_id" property="updateUserId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        order_id AS orderId, user_id AS userId, product_id AS productId, product_type AS productType, pay_state AS payState, total_fee AS totalFee, trade_type AS tradeType, bank_type AS bankType, is_subscribe AS isSubscribe, recommender_user_id AS recommenderUserId, valid_tag AS validTag, create_time AS createTime, end_time AS endTime, create_user_id AS createUserId, update_time AS updateTime, update_user_id AS updateUserId
+    </sql>
+
+
+	<select id="customQuery" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM Orders Orders
+		WHERE Orders.order_id = #{id}
+	</select>	
+	
+	<select id="selectOrdersList" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        SELECT o.*
+        FROM orders o 
+        WHERE o.valid_tag = 1
+        AND o.pay_state = 1 
+        <if test="userId != null and '' != userId">
+			AND user_id = #{userId}
+		</if>
+		<if test="startTime != null and '' != startTime" >
+			AND date(o.create_time) &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and '' != endTime" >
+			AND date(o.create_time) &lt; #{endTime}
+		</if>
+        ORDER BY o.create_time DESC
+    </select> 
+    
+    <select id="getMemberOrdersInfo" resultType="java.util.HashMap" parameterType="string">
+        SELECT u.user_name AS ordersUserName, m.member_type_name AS ordersProductName, 
+			o.total_fee AS ordersTotalFee
+		FROM orders o, user u, member_type m
+		WHERE o.order_id = #{orderId}
+		AND u.user_id = o.user_id
+		AND m.member_type_id = o.product_id        
+    </select>
+    
+    <select id="getLessonOrdersInfo" resultType="java.util.HashMap" parameterType="string">
+        SELECT u.user_name AS ordersUserName, l.lesson_name AS ordersProductName, 
+			o.total_fee AS ordersTotalFee
+		FROM orders o, user u, lesson l
+		WHERE o.order_id = #{orderId}
+		AND u.user_id = o.user_id
+		AND l.lesson_id = o.product_id         
+    </select>
+    
+    <select id="getExpiryOrders" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+        select * from orders
+		where pay_state = 1 
+		and valid_tag = 1
+		and product_type = 1
+		and product_id = #{memberType}
+		and date_format(create_time, '%Y-%m') &gt;= #{startTime}
+		and date_format(create_time, '%Y-%m') &lt;= #{endTime}
+    </select>
+    
+</mapper>
